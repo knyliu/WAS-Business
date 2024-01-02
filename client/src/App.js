@@ -1,27 +1,38 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import "./App.css";
-
-import { Navbar } from "./components/navbar";
-import { Auth } from "./pages/auth";
-import { CreateAppointment } from "./pages/create-appointment";
-import { Home } from "./pages/home";
-import { SavedAppointments } from "./pages/saved-appointments";
-
-import{ UpdateStores } from "./pages/update-stores";
+import baseUrl from "./baseUrl";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function App() {
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(`${baseUrl}/get-users`)
+      .then((res) => setUsers(res.data))
+      .catch((err) => console.log(err));
+  }, []);
+
   return (
     <div className="App">
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/create-appointment" element={<CreateAppointment />} />
-          <Route path="/saved-appointments" element={<SavedAppointments />} />
-          <Route path="/update-stores" element={<UpdateStores />} />
-          <Route path="/auth" element={<Auth />} />
-        </Routes>
-      </Router>
+      <h1>Customers List</h1>
+
+      {users &&
+        users.length > 0 &&
+        users.map((user) => {
+          return (
+            <div>
+              <h3>
+                {user.name} {user.lastName}
+              </h3>
+            </div>
+          );
+        })}
+
+      <button onClick={() => navigate("create")}>Create</button>
     </div>
   );
 }
