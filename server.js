@@ -1,54 +1,26 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const port = process.env.PORT || 3001;
-const path = require('path');
+import express from "express"; //create API, served Front-End
+import cors from "cors"; // set up the commnuication rules between Front-End and Back-End
+import mongoose from "mongoose";
 
-const app = express();
+import { userRouter } from "./routes/user.js";
+import { appointmentsRouter } from "./routes/route_appointment.js";
 
-app.use(express.json());
+
+const app = express(); // a version of our API
+
+app.use(express.json()); // the data got from the Front-End will be converted into JSON
 app.use(cors());
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Database is connected..."))
-  .catch((err) => console.log(err));
+app.use("/auth", userRouter); // applt the router
+app.use("/appointments", appointmentsRouter);
+app.use("/client_appointments", appointmentsRouter);
 
-//db schema
-const userSchema = mongoose.Schema({
-  name: String,
-  lastName: String,
-});
+mongoose.connect(
+  "mongodb+srv://41171123h:41171123hB1@b1.3xjj9xw.mongodb.net/?retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 
-//db model
-const User = new mongoose.model("User", userSchema);
-
-app.get("/get-users", (req, res) => {
-  User.find()
-    .then((users) => res.json(users))
-    .catch((err) => console.log(err));
-});
-
-app.post("/create", (req, res) => {
-  //save to mongodb and send response
-  const newUser = new User({
-    name: req.body.name,
-    lastName: req.body.lastName,
-  });
-
-  newUser
-    .save()
-    .then((user) => res.json(user))
-    .catch((err) => console.log(err));
-});
-
-// production script
-app.use(express.static("./client/build"));
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on post ${port}`);
-});
+app.listen(3001, () => console.log("Server started"));
